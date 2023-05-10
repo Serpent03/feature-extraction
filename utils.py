@@ -2,12 +2,11 @@ import cv2
 import pickle
 import numpy as np
 
-def readIm(pathToIm, rFac = 5):
-    # colMode = 0 => gray
-    # colMode = 1 => normal
+def readIm(pathToIm):
+    rFac = 5
     im = cv2.imread(pathToIm)
-    im = np.array(im)
     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    im = np.array(im)
     im = cv2.GaussianBlur(im, (5,5), 0)
     im =  cv2.resize(im, (
         int(im.shape[1] / rFac), # width
