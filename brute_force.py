@@ -8,11 +8,14 @@ camMtx = retCamMtx("./cameraMatrix.pkl")
 distCoeff = retDistCoeff("./dist.pkl")
 
 kp1, des1, kp2, des2 = ORB_detector(img1, img2)
+kpL1 = retKpList(kp1)
+kpL2 = retKpList(kp2)
 numMatches = bruteForceMatcher(des1, des2)[:20]
 # numMatches = bruteForceMatcherkNN(des1, des2)
 # TODO print(numMatches)
 
-e, _ = retEssentialMat(kp1, kp2, camMtx, distCoeff)
+essentialMatrix, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
+print(essentialMatrix)
 
 out = cv2.drawMatches(img1, kp1, img2, kp2, numMatches, None)
 cv2.imshow('Image', out)
