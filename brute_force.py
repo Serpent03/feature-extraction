@@ -14,8 +14,9 @@ numMatches = bruteForceMatcher(des1, des2)[:20]
 # numMatches = bruteForceMatcherkNN(des1, des2)
 # TODO print(numMatches)
 
-essentialMatrix, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
-print(essentialMatrix)
+essMtx, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
+_, R, t, mask = retPoseRecovery(essMtx, kpL1, kpL2)
+print(f'{R}\n, {t}')
 
 out = cv2.drawMatches(img1, kp1, img2, kp2, numMatches, None)
 cv2.imshow('Image', out)

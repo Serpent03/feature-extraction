@@ -21,7 +21,7 @@ def retCamMtx(pathToCamMtx):
 
 def retDistCoeff(pathToDistCoeff):
     with open(f'{pathToDistCoeff}', 'rb') as f:
-        return pickle.load(f)
+        return np.array(pickle.load(f))
 
 def ORB_detector(im1, im2):
     detect = cv2.ORB_create()
@@ -34,7 +34,7 @@ def retKpList(kp):
     kpL = []
     for i in kp:
         kpL.append(i.pt)
-    return kpL
+    return np.array(kpL)
 
 def bruteForceMatcher(des1, des2):
     bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING, crossCheck=True)
@@ -53,8 +53,12 @@ def retGoodPoints(kps, bfMatches):
 
 def retEssentialMat(kpL1, kpL2, camMtx, dist):
     # print(type(kpL1))
-    kpL1 = np.array(kpL1) # convert to np.array just before operation
-    kpL2 = np.array(kpL2)
-    dist = np.array(dist)
+    # kpL1 = np.array(kpL1) # convert to np.array just before operation
+    # kpL2 = np.array(kpL2)
+    # dist = np.array(dist)
     c =  cv2.findEssentialMat(kpL1, kpL2, camMtx, None, None, None, None)
+    return c
+
+def retPoseRecovery(essMtx, kpL1, kpL2):
+    c = cv2.recoverPose(essMtx, kpL1, kpL2)
     return c
