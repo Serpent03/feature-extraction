@@ -62,3 +62,13 @@ def retEssentialMat(kpL1, kpL2, camMtx, dist):
 def retPoseRecovery(essMtx, kpL1, kpL2):
     c = cv2.recoverPose(essMtx, kpL1, kpL2)
     return c
+
+def retTriangulation(_R, _t, kpL1, kpL2):
+    proj_matrix = np.hstack((_R, _t))
+    print(kpL2[0])
+    # BUG -> the points need to be iterated..
+    pts_4d = cv2.triangulatePoints(np.eye(3, 4), proj_matrix, kpL1[-1], kpL2[-1])
+    pts_3d = cv2.convertPointsFromHomogeneous(pts_4d.T)
+    return pts_3d
+    # return -1
+    # TODO -> PROJ points(kpL) are causing issues with dimensionality.

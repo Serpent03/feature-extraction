@@ -12,11 +12,13 @@ kpL1 = retKpList(kp1)
 kpL2 = retKpList(kp2)
 numMatches = bruteForceMatcher(des1, des2)[:20]
 # numMatches = bruteForceMatcherkNN(des1, des2)
-# TODO print(numMatches)
+# print(numMatches)
 
 essMtx, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
 _, R, t, mask = retPoseRecovery(essMtx, kpL1, kpL2)
-print(f'{R}\n, {t}')
+pts_3d = retTriangulation(R, t, kpL1, kpL2)
+print(f'{pts_3d}')
+
 
 out = cv2.drawMatches(img1, kp1, img2, kp2, numMatches, None)
 cv2.imshow('Image', out)
