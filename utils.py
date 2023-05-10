@@ -1,7 +1,8 @@
 import cv2
 
-def readIm(pathToIm, rFac = 6):
+def readIm(pathToIm, rFac = 5):
     im = cv2.imread(pathToIm)
+    im = cv2.GaussianBlur(im, (5,5), 0)
     im =  cv2.resize(im, (
         int(im.shape[1] / rFac), # width
         int(im.shape[0] / rFac), # height
@@ -14,3 +15,10 @@ def ORB_detector(im1, im2):
     kp1, des1 = detect.detectAndCompute(im1, None)
     kp2, des2 = detect.detectAndCompute(im2, None)
     return (kp1, des1, kp2, des2)
+
+def bruteForceMatcher(des1, des2):
+    bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING, crossCheck=True)
+    numMatches = bfm.match(des1, des2)
+    numMatches = sorted(numMatches,key=lambda x:x.distance)
+    return numMatches
+
