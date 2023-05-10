@@ -1,7 +1,13 @@
 import cv2
+import pickle
+import numpy as np
 
 def readIm(pathToIm, rFac = 5):
+    # colMode = 0 => gray
+    # colMode = 1 => normal
     im = cv2.imread(pathToIm)
+    im = np.array(im)
+    im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     im = cv2.GaussianBlur(im, (5,5), 0)
     im =  cv2.resize(im, (
         int(im.shape[1] / rFac), # width
@@ -10,15 +16,37 @@ def readIm(pathToIm, rFac = 5):
     print(im.shape)
     return im
 
+def retCamMtx(pathToCamMtx):
+    with open(f'{pathToCamMtx}', 'rb') as f:
+        return pickle.load(f)
+
+def retDistCoeff(pathToDistCoeff):
+    with open(f'{pathToDistCoeff}', 'rb') as f:
+        return pickle.load(f)
+
 def ORB_detector(im1, im2):
     detect = cv2.ORB_create()
     kp1, des1 = detect.detectAndCompute(im1, None)
     kp2, des2 = detect.detectAndCompute(im2, None)
+    print(kp1[0])
     return (kp1, des1, kp2, des2)
 
 def bruteForceMatcher(des1, des2):
     bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING, crossCheck=True)
     numMatches = bfm.match(des1, des2)
     numMatches = sorted(numMatches,key=lambda x:x.distance)
+    print(numMatches[0].imgIdx)
     return numMatches
 
+def bruteForceMatcherkNN(des1, des2):
+    bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING, crossCheck=True)
+    matches = bfm.knnMatch(des1, des2, k=1)
+    return matches
+
+def retGoodPoints(kps, bfMatches):
+    points = np.float32([kps[m.queryIdx].pt for m in bfMatches]).reshape(-1, 1, 2)
+
+def retEssentialMat(kp1, kp2, camMtx, dist):
+    # print(vars(kp1))
+    c =  cv2.findEssentialMat(kp1, kp2, camMtx, None, dist, None, None)
+    return c
