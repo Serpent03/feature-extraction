@@ -1,8 +1,7 @@
 import cv2
 import pickle
 import numpy as np
-from mpl_toolkits import mplot3d
-import matplotlib.pyplot as plt
+import plotly.graph_objects as go
 
 def readIm(pathToIm):
     rFac = 6
@@ -81,7 +80,7 @@ def retTriangulation(_R, _t, kpL1, kpL2, limiter):
     pts_3d = []
     proj_matrix = np.hstack((_R, _t))
     # print(kpL2[0])
-    for i in range(limiter):
+    for i in range(len(kpL1)):
         pts_4d = cv2.triangulatePoints(np.eye(3, 4), proj_matrix, kpL1[i], kpL2[i])
         pts = cv2.convertPointsFromHomogeneous(pts_4d.T)
         # print(pts)
@@ -94,8 +93,6 @@ def display2D(img1, kp1, img2, kp2, numMatches):
     cv2.imshow('Image', out)
 
 def display3D(pointCloud):
-    fig = plt.figure()
-    ax = plt.axes(projection = '3d')
     x = []
     y = []
     z = []
@@ -105,10 +102,19 @@ def display3D(pointCloud):
         y.append(i[1])
         z.append(i[2])
 
-    # print(x)
-    # print(pointCloud)
+    print(z)
 
-    ax.scatter(x, y, z, c='b', marker='.')
-    plt.show()
-    
+    markerData = go.Scatter3d(
+        x = x,
+        y = y,
+        z = z,
+        marker=go.scatter3d.Marker(size=3), 
+        opacity=0.8, 
+        mode='markers'
+    )
+
+    fig = go.Figure(data=markerData)
+    fig.show()
+
+    # print(x)
     # print(pointCloud)
