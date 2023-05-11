@@ -1,38 +1,39 @@
 import cv2
+import os
 
 from utils import *
 
-# TODO: implement multiple image system
-
+imDIR = './Images/'
+limiter = 1200 # number of matches
+imgs = os.listdir(imDIR)
+imSEQ = list(zip(imgs, imgs[1:]))
+pts_3d = []
 
 camMtx = retCamMtx("./cameraMatrix.pkl")
 nCamMtx = retCamMtx("./newCameraMatrix.pkl")
 distCoeff = retDistCoeff("./dist.pkl")
 
-img1 = readIm('./Images/2.jpg')
-# img1 = retUndistortedIm(img1, camMtx, nCamMtx, distCoeff)
-img2 = readIm('./Images/3.jpg')
-# img2 = retUndistortedIm(img2, camMtx, nCamMtx, distCoeff)
-limiter = 20 # number of matches
+for i in imSEQ:
+    img1 = readIm(f'{imDIR}{i[0]}')
+    img2 = readIm(f'{imDIR}{i[1]}')
+    img1 = retUndistortedIm(img1, camMtx, nCamMtx, distCoeff)
+    img2 = retUndistortedIm(img2, camMtx, nCamMtx, distCoeff)
 
-kp1, des1, kp2, des2 = ORB_detector(img1, img2)
-# kp1, des1, kp2, des2 = BRISK_detector(img1, img2)
-kpL1 = retKpList(kp1)
-kpL2 = retKpList(kp2)
-numMatches = bruteForceMatcher(des1, des2)
-# numMatches = bruteForceMatcherkNN(des1, des2)
+    kp1, des1, kp2, des2 = ORB_detector(img1, img2, limiter)
+    # kp1, des1, kp2, des2 = BRISK_detector(img1, img2)
+    kpL1 = retKpList(kp1)
+    kpL2 = retKpList(kp2)
+    numMatches = bruteForceMatcher(des1, des2)
 
-essMtx, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
-_, R, t, mask = retPoseRecovery(essMtx, kpL1, kpL2)
-pts_3d = retTriangulation(R, t, kpL1, kpL2, limiter)
-print(f'{pts_3d}')
+    essMtx, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
+    _, R, t, mask = retPoseRecovery(essMtx, kpL1, kpL2)
+    pts_3d.extend(retTriangulation(R, t, kpL1, kpL2, limiter))
+    # print(f'{pts_3d}')
+    display2D(img1, kp1, img2, kp2, numMatches)
+    cv2.waitKey(1)
 
-display2D(img1, kp1, img2, kp2, numMatches)
+# TODO: check with the other camera with a fresh calibration
 display3D(pts_3d)
 
-# cv2.imshow('Image', cv2.drawKeypoints(img1, kp1, img1))
-# cv2.imshow('Image', img2)
-
-cv2.waitKey(0)
 cv2.destroyAllWindows()
 
