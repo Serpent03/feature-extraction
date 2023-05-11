@@ -4,7 +4,7 @@ import os
 from utils import *
 
 imDIR = './Images/'
-limiter = 1200 # number of matches
+limiter = 500 # number of matches
 imgs = os.listdir(imDIR)
 imSEQ = list(zip(imgs, imgs[1:]))
 pts_3d = []
@@ -14,10 +14,11 @@ nCamMtx = retCamMtx("./newCameraMatrix.pkl")
 distCoeff = retDistCoeff("./dist.pkl")
 
 for i in imSEQ:
+    print(i[0])
     img1 = readIm(f'{imDIR}{i[0]}')
     img2 = readIm(f'{imDIR}{i[1]}')
-    img1 = retUndistortedIm(img1, camMtx, nCamMtx, distCoeff)
-    img2 = retUndistortedIm(img2, camMtx, nCamMtx, distCoeff)
+    # img1 = retUndistortedIm(img1, camMtx, nCamMtx, distCoeff)
+    # img2 = retUndistortedIm(img2, camMtx, nCamMtx, distCoeff)
 
     kp1, des1, kp2, des2 = ORB_detector(img1, img2, limiter)
     # kp1, des1, kp2, des2 = BRISK_detector(img1, img2)
@@ -26,10 +27,11 @@ for i in imSEQ:
     numMatches = bruteForceMatcher(des1, des2)
 
     essMtx, _ = retEssentialMat(kpL1, kpL2, camMtx, distCoeff)
-    _, R, t, mask = retPoseRecovery(essMtx, kpL1, kpL2)
+    _, R, t, mask = retPoseRecovery(essMtx, kpL1, kpL2, camMtx)
     pts_3d.extend(retTriangulation(R, t, kpL1, kpL2, limiter))
-    # print(f'{pts_3d}')
+    print(f'R: {R}\nt: {t}')
     display2D(img1, kp1, img2, kp2, numMatches)
+    # test = linear_LS_triangulation(kp1, camMtx, kp2, camMtx)
     cv2.waitKey(1)
 
 # FIXME: almost no depth in the images, might be caused
