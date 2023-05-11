@@ -5,7 +5,7 @@ from mpl_toolkits import mplot3d
 import matplotlib.pyplot as plt
 
 def readIm(pathToIm):
-    rFac = 4
+    rFac = 6
     im = cv2.imread(pathToIm)
     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     im = np.array(im)
@@ -18,7 +18,7 @@ def readIm(pathToIm):
     return im
 
 def retUndistortedIm(im, camMtx, nCamMtx, distCoeff):
-    imUndistorted = cv2.undistort(im, camMtx, distCoeff, None, nCamMtx)
+    imUndistorted = cv2.undistort(im, camMtx, None, None, nCamMtx)
     return imUndistorted
 
 def retCamMtx(pathToCamMtx):
@@ -29,8 +29,8 @@ def retDistCoeff(pathToDistCoeff):
     with open(f'{pathToDistCoeff}', 'rb') as f:
         return np.array(pickle.load(f))
 
-def ORB_detector(im1, im2):
-    detect = cv2.ORB_create(nfeatures=250)
+def ORB_detector(im1, im2, limiter):
+    detect = cv2.ORB_create(nfeatures=limiter)
     kp1, des1 = detect.detectAndCompute(im1, None)
     kp2, des2 = detect.detectAndCompute(im2, None)
     # print(kp1[0].pt)
@@ -84,7 +84,7 @@ def retTriangulation(_R, _t, kpL1, kpL2, limiter):
     # FIXME: the points need to be iterated..  
 
     for i in range(limiter):
-        pts_4d = cv2.triangulatePoints(proj_matrix, proj_matrix, kpL1[i], kpL2[i])
+        pts_4d = cv2.triangulatePoints(np.eye(3, 4), proj_matrix, kpL1[i], kpL2[i])
         pts = cv2.convertPointsFromHomogeneous(pts_4d.T)
         # print(pts)
         pts_3d.append([pts[0][0][0], pts[0][0][1], pts[0][0][2]])
