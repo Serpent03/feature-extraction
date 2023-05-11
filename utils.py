@@ -1,9 +1,11 @@
 import cv2
 import pickle
 import numpy as np
+from mpl_toolkits import mplot3d
+import matplotlib.pyplot as plt
 
 def readIm(pathToIm):
-    rFac = 5
+    rFac = 4
     im = cv2.imread(pathToIm)
     im = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     im = np.array(im)
@@ -14,6 +16,10 @@ def readIm(pathToIm):
     ))
     print(im.shape)
     return im
+
+def retUndistortedIm(im, camMtx, nCamMtx, distCoeff):
+    imUndistorted = cv2.undistort(im, camMtx, distCoeff, None, nCamMtx)
+    return imUndistorted
 
 def retCamMtx(pathToCamMtx):
     with open(f'{pathToCamMtx}', 'rb') as f:
@@ -37,14 +43,14 @@ def retKpList(kp):
     return np.array(kpL)
 
 def bruteForceMatcher(des1, des2):
-    bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING, crossCheck=True)
+    bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING2, crossCheck=True)
     numMatches = bfm.match(des1, des2)
     numMatches = sorted(numMatches,key=lambda x:x.distance)
     # print(numMatches[0].imgIdx)
     return numMatches
 
 def bruteForceMatcherkNN(des1, des2):
-    bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING, crossCheck=True)
+    bfm = cv2.BFMatcher_create(cv2.NORM_HAMMING2, crossCheck=True)
     matches = bfm.knnMatch(des1, des2, k=1)
     return matches
 
@@ -63,12 +69,35 @@ def retPoseRecovery(essMtx, kpL1, kpL2):
     c = cv2.recoverPose(essMtx, kpL1, kpL2)
     return c
 
-def retTriangulation(_R, _t, kpL1, kpL2):
+def retTriangulation(_R, _t, kpL1, kpL2, limiter):
+    pts_3d = []
     proj_matrix = np.hstack((_R, _t))
-    print(kpL2[0])
-    # BUG -> the points need to be iterated..
-    pts_4d = cv2.triangulatePoints(np.eye(3, 4), proj_matrix, kpL1[-1], kpL2[-1])
-    pts_3d = cv2.convertPointsFromHomogeneous(pts_4d.T)
+    # print(kpL2[0])
+    # BUG=> the points need to be iterated..
+    for i in range(limiter):
+        pts_4d = cv2.triangulatePoints(np.eye(3, 4), proj_matrix, kpL1[i], kpL2[i])
+        pts = cv2.convertPointsFromHomogeneous(pts_4d.T)
+        # print(pts)
+        pts_3d.append([pts[0][0][0], pts[0][0][1], pts[0][0][2]])
     return pts_3d
     # return -1
-    # TODO -> PROJ points(kpL) are causing issues with dimensionality.
+
+def display3D(pointCloud):
+    fig = plt.figure()
+    ax = plt.axes(projection = '3d')
+    x = []
+    y = []
+    z = []
+
+    for i in pointCloud:
+        x.append(i[0])
+        y.append(i[1])
+        z.append(i[2])
+
+    # print(x)
+    # print(pointCloud)
+
+    ax.scatter(x, y, z, c='b', marker='.')
+    plt.show()
+    
+    # print(pointCloud)
