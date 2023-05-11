@@ -32,7 +32,8 @@ for i in imSEQ:
     display2D(img1, kp1, img2, kp2, numMatches)
     cv2.waitKey(1)
 
-# TODO: check with the other camera with a fresh calibration
+# FIXME: almost no depth in the images, might be caused
+# FIXME: by incorrect calibration matrix.
 display3D(pts_3d)
 
 cv2.destroyAllWindows()
