@@ -81,8 +81,6 @@ def retTriangulation(_R, _t, kpL1, kpL2, limiter):
     pts_3d = []
     proj_matrix = np.hstack((_R, _t))
     # print(kpL2[0])
-    # FIXME: the points need to be iterated..  
-
     for i in range(limiter):
         pts_4d = cv2.triangulatePoints(np.eye(3, 4), proj_matrix, kpL1[i], kpL2[i])
         pts = cv2.convertPointsFromHomogeneous(pts_4d.T)
